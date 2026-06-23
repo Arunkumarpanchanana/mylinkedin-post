@@ -486,8 +486,8 @@
     <div class="form-group">
       <label>Generate Image</label>
       <div class="toggle-group" id="imageToggle" role="radiogroup" aria-label="Generate Image">
-        <button class="toggle-btn" data-value="false" role="radio" aria-checked="false">No</button>
-        <button class="toggle-btn active" data-value="true" role="radio" aria-checked="true">Yes</button>
+        <button class="toggle-btn active" data-value="false" role="radio" aria-checked="true">No</button>
+        <button class="toggle-btn" data-value="true" role="radio" aria-checked="false">Yes</button>
       </div>
     </div>
 
@@ -521,7 +521,7 @@
   <div class="settings-panel" id="settingsPanel">
     <label for="apiKeyInput" style="font-size:13px;font-weight:600;color:#1F2937;display:block;margin-bottom:8px;">Gemini API Key</label>
     <div class="settings-row">
-      <input type="text" id="apiKeyInput" placeholder="Enter your Gemini API key">
+      <input type="password" id="apiKeyInput" placeholder="Enter your Gemini API key">
       <button class="btn-save" id="saveKeyBtn" onclick="saveApiKey()">Save</button>
     </div>
     <div class="status-msg" id="settingsStatus">API key saved successfully!</div>
@@ -538,17 +538,31 @@
       }
     });
 
-    const toggleBtns = document.querySelectorAll('.toggle-btn');
+    var toggleBtns = document.querySelectorAll('.toggle-btn');
     toggleBtns.forEach(function(btn) {
       btn.addEventListener('click', function() {
-        toggleBtns.forEach(function(b) {
-          b.classList.remove('active');
-          b.setAttribute('aria-checked', 'false');
-        });
-        btn.classList.add('active');
-        btn.setAttribute('aria-checked', 'true');
+        setActiveToggle(btn);
+      });
+      btn.addEventListener('keydown', function(e) {
+        if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+          e.preventDefault();
+          var siblings = Array.from(toggleBtns);
+          var idx = siblings.indexOf(btn);
+          var next = e.key === 'ArrowRight' ? (idx + 1) % siblings.length : (idx - 1 + siblings.length) % siblings.length;
+          siblings[next].focus();
+          setActiveToggle(siblings[next]);
+        }
       });
     });
+
+    function setActiveToggle(btn) {
+      toggleBtns.forEach(function(b) {
+        b.classList.remove('active');
+        b.setAttribute('aria-checked', 'false');
+      });
+      btn.classList.add('active');
+      btn.setAttribute('aria-checked', 'true');
+    }
 
     google.script.run
       .withSuccessHandler(function(hasKey) {
@@ -560,8 +574,8 @@
   });
 
   function getWithImage() {
-    const active = document.querySelector('.toggle-btn.active[data-value="true"]');
-    return !!active;
+    var active = document.querySelector('.toggle-btn.active');
+    return active ? active.getAttribute('data-value') === 'true' : false;
   }
 
   function handleGenerate() {
