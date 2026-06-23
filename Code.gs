@@ -116,7 +116,7 @@ Write the post now:`;
 }
 
 /**
- * Generates a LinkedIn post using Gemini API
+ * Generates a LinkedIn post using Gemini API with auto-retry on quota errors
  */
 function generatePost(topic, type, withImage) {
   const apiKey = getApiKey();
@@ -144,42 +144,62 @@ function generatePost(topic, type, withImage) {
     }
   };
 
-  try {
-    const response = UrlFetchApp.fetch(url, {
-      method: 'POST',
-      contentType: 'application/json',
-      payload: JSON.stringify(payload),
-      headers: { 'x-goog-api-key': apiKey },
-      muteHttpExceptions: true
-    });
+  const maxRetries = 6;
+  let lastError = null;
 
-    const result = JSON.parse(response.getContentText());
-    const httpCode = response.getResponseCode();
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      const response = UrlFetchApp.fetch(url, {
+        method: 'POST',
+        contentType: 'application/json',
+        payload: JSON.stringify(payload),
+        headers: { 'x-goog-api-key': apiKey },
+        muteHttpExceptions: true
+      });
 
-    if (httpCode !== 200) {
-      const errMsg = result.error ? result.error.message : 'Unknown API error';
-      return { error: 'Gemini API error: ' + errMsg };
-    }
+      const result = JSON.parse(response.getContentText());
+      const httpCode = response.getResponseCode();
 
-    const postText = result.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+      if (httpCode !== 200) {
+        const errMsg = result.error ? result.error.message : 'Unknown API error';
 
-    if (!postText) {
-      return { error: 'Gemini returned an empty response. Try a different topic.' };
-    }
+        if (errMsg.indexOf('quota') > -1 || httpCode === 429 || httpCode === 503) {
+          lastError = 'Quota exceeded. Retrying...';
+          const waitMatch = errMsg.match(/retry in (\d+(\.\d+)?)s/);
+          const waitSec = waitMatch ? Math.min(parseFloat(waitMatch[1]), 60) : Math.min(5 * Math.pow(2, attempt), 60);
+          Utilities.sleep(waitSec * 1000);
+          continue;
+        }
 
-    let imageUrl = null;
-    if (withImage) {
-      imageUrl = generateImage(topic.trim(), apiKey);
-      if (!imageUrl) {
-        console.warn('Image generation returned no result for topic: ' + topic);
+        return { error: 'Gemini API error: ' + errMsg };
+      }
+
+      const postText = result.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+
+      if (!postText) {
+        return { error: 'Gemini returned an empty response. Try a different topic.' };
+      }
+
+      let imageUrl = null;
+      if (withImage) {
+        imageUrl = generateImage(topic.trim(), apiKey);
+        if (!imageUrl) {
+          console.warn('Image generation returned no result for topic: ' + topic);
+        }
+      }
+
+      return { postText: postText, imageUrl: imageUrl };
+
+    } catch (e) {
+      lastError = e.toString();
+      if (attempt < maxRetries) {
+        const waitSec = Math.min(5 * Math.pow(2, attempt), 60);
+        Utilities.sleep(waitSec * 1000);
       }
     }
-
-    return { postText: postText, imageUrl: imageUrl };
-
-  } catch (e) {
-    return { error: 'Request failed: ' + e.toString() };
   }
+
+  return { error: 'Request failed after retries: ' + lastError };
 }
 
 /**
