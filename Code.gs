@@ -121,7 +121,7 @@ Write the post now:`;
 function generatePost(topic, type, withImage) {
   const apiKey = getApiKey();
   if (!apiKey) {
-    return { error: 'API key not configured. Please add your Gemini API key in settings.' };
+    return { error: 'API key not configured. Set GEMINI_API_KEY in Script Properties.' };
   }
 
   if (!topic || topic.trim() === '') {

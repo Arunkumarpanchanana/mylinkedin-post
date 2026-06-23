@@ -340,107 +340,12 @@
       background: #FFF1F2;
     }
 
-    .footer-link {
-      text-align: center;
-      margin-top: 24px;
-    }
-
-    .footer-link button {
-      background: none;
-      border: none;
-      font-size: 13px;
-      font-weight: 600;
-      font-family: 'Plus Jakarta Sans', sans-serif;
-      color: #6B7280;
-      cursor: pointer;
-      text-decoration: underline;
-      text-underline-offset: 2px;
-      transition: color 200ms;
-    }
-
-    .footer-link button:hover {
-      color: #E11D48;
-    }
-
-    .settings-panel {
-      display: none;
-      margin-top: 16px;
-      background: #FFFFFF;
-      border-radius: 16px;
-      padding: 24px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04);
-      border: 1px solid #FECDD3;
-    }
-
-    .settings-panel.visible {
-      display: block;
-    }
-
-    .settings-panel h3 {
-      font-size: 15px;
-      font-weight: 700;
-      margin-bottom: 16px;
-      color: #1F2937;
-    }
-
-    .settings-row {
-      display: flex;
-      gap: 12px;
-      align-items: stretch;
-    }
-
-    .settings-row input[type="text"] {
-      flex: 1;
-    }
-
-    .btn-save {
-      padding: 12px 20px;
-      font-size: 14px;
-      font-weight: 600;
-      font-family: 'Plus Jakarta Sans', sans-serif;
-      border: none;
-      border-radius: 10px;
-      background: #E11D48;
-      color: #FFF;
-      cursor: pointer;
-      transition: background 200ms, transform 200ms;
-      white-space: nowrap;
-    }
-
-    .btn-save:hover {
-      background: #881337;
-      transform: translateY(-1px);
-    }
-
-    .btn-save:active {
-      transform: translateY(0);
-    }
-
-    .btn-save:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
-
-    .status-msg {
-      font-size: 13px;
-      margin-top: 10px;
-      color: #059669;
-      display: none;
-    }
-
-    .status-msg.visible {
-      display: block;
-    }
-
     @media (max-width: 480px) {
       .card {
         padding: 20px;
       }
       .header h1 {
         font-size: 22px;
-      }
-      .settings-row {
-        flex-direction: column;
       }
       .result-actions {
         flex-direction: column;
@@ -514,18 +419,6 @@
     </div>
   </div>
 
-  <div class="footer-link">
-    <button onclick="toggleSettings()">Configure API Key</button>
-  </div>
-
-  <div class="settings-panel" id="settingsPanel">
-    <label for="apiKeyInput" style="font-size:13px;font-weight:600;color:#1F2937;display:block;margin-bottom:8px;">Gemini API Key</label>
-    <div class="settings-row">
-      <input type="password" id="apiKeyInput" placeholder="Enter your Gemini API key">
-      <button class="btn-save" id="saveKeyBtn" onclick="saveApiKey()">Save</button>
-    </div>
-    <div class="status-msg" id="settingsStatus">API key saved successfully!</div>
-  </div>
 </div>
 
 <script>
@@ -563,14 +456,6 @@
       btn.classList.add('active');
       btn.setAttribute('aria-checked', 'true');
     }
-
-    google.script.run
-      .withSuccessHandler(function(hasKey) {
-        if (!hasKey) {
-          document.getElementById('settingsPanel').classList.add('visible');
-        }
-      })
-      .hasApiKey();
   });
 
   function getWithImage() {
@@ -684,39 +569,6 @@
     document.getElementById('errorArea').textContent = '';
   }
 
-  function toggleSettings() {
-    document.getElementById('settingsPanel').classList.toggle('visible');
-  }
-
-  function saveApiKey() {
-    var key = document.getElementById('apiKeyInput').value.trim();
-    if (!key) {
-      showError('Please enter an API key before saving.');
-      return;
-    }
-
-    hideError();
-    var btn = document.getElementById('saveKeyBtn');
-    btn.disabled = true;
-    btn.textContent = 'Saving...';
-
-    google.script.run
-      .withSuccessHandler(function() {
-        btn.disabled = false;
-        btn.textContent = 'Save';
-        var status = document.getElementById('settingsStatus');
-        status.classList.add('visible');
-        setTimeout(function() {
-          status.classList.remove('visible');
-        }, 3000);
-      })
-      .withFailureHandler(function(err) {
-        btn.disabled = false;
-        btn.textContent = 'Save';
-        showError('Failed to save API key: ' + err.message);
-      })
-      .saveApiKey(key);
-  }
 </script>
 
 </body>
