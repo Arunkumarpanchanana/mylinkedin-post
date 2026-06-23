@@ -60,7 +60,7 @@
     .header h1 {
       font-size: 26px;
       font-weight: 800;
-      color: #1F2937;
+      color: #881337;
       line-height: 1.2;
     }
 
@@ -408,7 +408,7 @@
     }
 
     .btn-save:hover {
-      background: #BE123C;
+      background: #881337;
       transform: translateY(-1px);
     }
 
@@ -432,7 +432,7 @@
       display: block;
     }
 
-    @media (max-width: 520px) {
+    @media (max-width: 480px) {
       .card {
         padding: 20px;
       }
@@ -519,7 +519,7 @@
   </div>
 
   <div class="settings-panel" id="settingsPanel">
-    <h3>API Configuration</h3>
+    <label for="apiKeyInput" style="font-size:13px;font-weight:600;color:#1F2937;display:block;margin-bottom:8px;">Gemini API Key</label>
     <div class="settings-row">
       <input type="text" id="apiKeyInput" placeholder="Enter your Gemini API key">
       <button class="btn-save" id="saveKeyBtn" onclick="saveApiKey()">Save</button>
