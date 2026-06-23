@@ -130,7 +130,7 @@ function generatePost(topic, type, withImage) {
 
   const prompt = buildPrompt(topic.trim(), type);
 
-  const url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=' + apiKey;
+  const url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
 
   const payload = {
     contents: [{
@@ -149,6 +149,7 @@ function generatePost(topic, type, withImage) {
       method: 'POST',
       contentType: 'application/json',
       payload: JSON.stringify(payload),
+      headers: { 'x-goog-api-key': apiKey },
       muteHttpExceptions: true
     });
 
@@ -169,6 +170,9 @@ function generatePost(topic, type, withImage) {
     let imageUrl = null;
     if (withImage) {
       imageUrl = generateImage(topic.trim(), apiKey);
+      if (!imageUrl) {
+        console.warn('Image generation returned no result for topic: ' + topic);
+      }
     }
 
     return { postText: postText, imageUrl: imageUrl };
@@ -184,7 +188,7 @@ function generatePost(topic, type, withImage) {
 function generateImage(topic, apiKey) {
   const prompt = `Professional LinkedIn post image about: ${topic}. Clean composition, modern design, suitable for a social media post. No text in the image.`;
 
-  const url = 'https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=' + apiKey;
+  const url = 'https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict';
 
   const payload = {
     instances: [{ prompt: prompt }],
@@ -199,6 +203,7 @@ function generateImage(topic, apiKey) {
       method: 'POST',
       contentType: 'application/json',
       payload: JSON.stringify(payload),
+      headers: { 'x-goog-api-key': apiKey },
       muteHttpExceptions: true
     });
 
@@ -206,6 +211,7 @@ function generateImage(topic, apiKey) {
     const httpCode = response.getResponseCode();
 
     if (httpCode !== 200) {
+      console.error('Imagen API error (HTTP ' + httpCode + '): ' + JSON.stringify(result));
       return null;
     }
 
@@ -216,6 +222,7 @@ function generateImage(topic, apiKey) {
 
     return null;
   } catch (e) {
+    console.error('Imagen request failed: ' + e.toString());
     return null;
   }
 }
