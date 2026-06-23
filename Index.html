@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>LinkedIn Post Generator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #FFF1F2;
+      color: #1F2937;
+      min-height: 100vh;
+      padding: 0 16px 64px;
+    }
+
+    .gradient-bar {
+      height: 4px;
+      background: linear-gradient(90deg, #E11D48, #2563EB, #FB7185);
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 10;
+    }
+
+    .container {
+      max-width: 680px;
+      margin: 0 auto;
+      padding-top: 40px;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+
+    .icon-square {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 56px;
+      height: 56px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #E11D48, #FB7185);
+      color: #fff;
+      font-size: 22px;
+      font-weight: 800;
+      margin-bottom: 16px;
+    }
+
+    .header h1 {
+      font-size: 26px;
+      font-weight: 800;
+      color: #1F2937;
+      line-height: 1.2;
+    }
+
+    .header p {
+      font-size: 15px;
+      color: #6B7280;
+      margin-top: 6px;
+      font-weight: 500;
+    }
+
+    .card {
+      background: #FFFFFF;
+      border-radius: 16px;
+      padding: 32px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04);
+      border: 1px solid #FECDD3;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group:last-of-type {
+      margin-bottom: 24px;
+    }
+
+    label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: #1F2937;
+      margin-bottom: 6px;
+      letter-spacing: 0.01em;
+    }
+
+    input[type="text"],
+    select {
+      width: 100%;
+      padding: 12px 14px;
+      font-size: 15px;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      border: 1.5px solid #FECDD3;
+      border-radius: 10px;
+      background: #FFF;
+      color: #1F2937;
+      outline: none;
+      transition: border-color 200ms, box-shadow 200ms;
+      appearance: none;
+      -webkit-appearance: none;
+    }
+
+    input[type="text"]:focus,
+    select:focus {
+      border-color: #E11D48;
+      box-shadow: 0 0 0 3px rgba(225, 29, 72, 0.12);
+    }
+
+    input[type="text"]::placeholder {
+      color: #9CA3AF;
+    }
+
+    select {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%236B7280' d='M1.41.59 6 5.17 10.59.59 12 2l-6 6-6-6Z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 14px center;
+      padding-right: 40px;
+      cursor: pointer;
+    }
+
+    .toggle-group {
+      display: flex;
+      gap: 0;
+      background: #FFF1F2;
+      border-radius: 10px;
+      padding: 4px;
+      width: fit-content;
+    }
+
+    .toggle-btn {
+      padding: 8px 20px;
+      font-size: 14px;
+      font-weight: 600;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      border: none;
+      border-radius: 8px;
+      background: transparent;
+      color: #6B7280;
+      cursor: pointer;
+      transition: all 200ms;
+    }
+
+    .toggle-btn.active {
+      background: #E11D48;
+      color: #FFF;
+      box-shadow: 0 1px 3px rgba(225, 29, 72, 0.25);
+    }
+
+    .toggle-btn:not(.active):hover {
+      color: #1F2937;
+    }
+
+    .btn-generate {
+      width: 100%;
+      padding: 14px 24px;
+      font-size: 16px;
+      font-weight: 700;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      border: none;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #E11D48, #FB7185);
+      color: #FFF;
+      cursor: pointer;
+      transition: opacity 200ms, transform 200ms, box-shadow 200ms;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      position: relative;
+    }
+
+    .btn-generate:hover:not(:disabled) {
+      opacity: 0.92;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 14px rgba(225, 29, 72, 0.3);
+    }
+
+    .btn-generate:active:not(:disabled) {
+      transform: translateY(0);
+    }
+
+    .btn-generate:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
+
+    .spinner {
+      display: none;
+      width: 18px;
+      height: 18px;
+      border: 2.5px solid rgba(255,255,255,0.3);
+      border-top-color: #FFF;
+      border-radius: 50%;
+      animation: spin 600ms linear infinite;
+    }
+
+    .btn-generate.loading .spinner {
+      display: inline-block;
+    }
+
+    .btn-generate.loading .btn-text {
+      display: none;
+    }
+
+    .btn-generate.loading .btn-loading-text {
+      display: inline;
+    }
+
+    .btn-loading-text {
+      display: none;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .error-area {
+      display: none;
+      background: #FEF2F2;
+      border: 1px solid #FECACA;
+      border-radius: 10px;
+      padding: 14px 16px;
+      margin-top: 16px;
+      font-size: 14px;
+      color: #B91C1C;
+      line-height: 1.5;
+    }
+
+    .error-area.visible {
+      display: block;
+    }
+
+    .result-area {
+      display: none;
+      margin-top: 24px;
+    }
+
+    .result-area.visible {
+      display: block;
+    }
+
+    .result-card {
+      background: #F9FAFB;
+      border: 1px solid #FECDD3;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+
+    .result-card h3 {
+      font-size: 13px;
+      font-weight: 700;
+      color: #6B7280;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 12px;
+    }
+
+    .post-preview {
+      font-size: 14px;
+      line-height: 1.7;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      min-height: 100px;
+      color: #1F2937;
+    }
+
+    .image-preview {
+      margin-top: 16px;
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1px solid #FECDD3;
+    }
+
+    .image-preview img {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+
+    .result-actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .btn-primary {
+      padding: 11px 24px;
+      font-size: 14px;
+      font-weight: 600;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      border: none;
+      border-radius: 10px;
+      background: #2563EB;
+      color: #FFF;
+      cursor: pointer;
+      transition: background 200ms, transform 200ms;
+    }
+
+    .btn-primary:hover {
+      background: #1D4ED8;
+      transform: translateY(-1px);
+    }
+
+    .btn-primary:active {
+      transform: translateY(0);
+    }
+
+    .btn-primary.copied {
+      background: #059669;
+    }
+
+    .btn-outline {
+      padding: 11px 24px;
+      font-size: 14px;
+      font-weight: 600;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      border: 1.5px solid #FECDD3;
+      border-radius: 10px;
+      background: transparent;
+      color: #1F2937;
+      cursor: pointer;
+      transition: border-color 200ms, background 200ms;
+    }
+
+    .btn-outline:hover {
+      border-color: #E11D48;
+      background: #FFF1F2;
+    }
+
+    .footer-link {
+      text-align: center;
+      margin-top: 24px;
+    }
+
+    .footer-link button {
+      background: none;
+      border: none;
+      font-size: 13px;
+      font-weight: 600;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      color: #6B7280;
+      cursor: pointer;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+      transition: color 200ms;
+    }
+
+    .footer-link button:hover {
+      color: #E11D48;
+    }
+
+    .settings-panel {
+      display: none;
+      margin-top: 16px;
+      background: #FFFFFF;
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04);
+      border: 1px solid #FECDD3;
+    }
+
+    .settings-panel.visible {
+      display: block;
+    }
+
+    .settings-panel h3 {
+      font-size: 15px;
+      font-weight: 700;
+      margin-bottom: 16px;
+      color: #1F2937;
+    }
+
+    .settings-row {
+      display: flex;
+      gap: 12px;
+      align-items: stretch;
+    }
+
+    .settings-row input[type="text"] {
+      flex: 1;
+    }
+
+    .btn-save {
+      padding: 12px 20px;
+      font-size: 14px;
+      font-weight: 600;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      border: none;
+      border-radius: 10px;
+      background: #E11D48;
+      color: #FFF;
+      cursor: pointer;
+      transition: background 200ms, transform 200ms;
+      white-space: nowrap;
+    }
+
+    .btn-save:hover {
+      background: #BE123C;
+      transform: translateY(-1px);
+    }
+
+    .btn-save:active {
+      transform: translateY(0);
+    }
+
+    .btn-save:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .status-msg {
+      font-size: 13px;
+      margin-top: 10px;
+      color: #059669;
+      display: none;
+    }
+
+    .status-msg.visible {
+      display: block;
+    }
+
+    @media (max-width: 520px) {
+      .card {
+        padding: 20px;
+      }
+      .header h1 {
+        font-size: 22px;
+      }
+      .settings-row {
+        flex-direction: column;
+      }
+      .result-actions {
+        flex-direction: column;
+      }
+      .btn-primary, .btn-outline {
+        width: 100%;
+        text-align: center;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="gradient-bar"></div>
+
+<div class="container">
+  <div class="header">
+    <div class="icon-square">Li</div>
+    <h1>LinkedIn Post Generator</h1>
+    <p>AI-powered posts that get noticed</p>
+  </div>
+
+  <div class="card">
+    <div class="form-group">
+      <label for="topicInput">Topic</label>
+      <input type="text" id="topicInput" placeholder="e.g. The future of remote work..." autofocus>
+    </div>
+
+    <div class="form-group">
+      <label for="typeSelect">Post Type</label>
+      <select id="typeSelect">
+        <option value="professional">Professional</option>
+        <option value="casual">Casual</option>
+        <option value="thought-leadership">Thought Leadership</option>
+        <option value="storytelling">Storytelling</option>
+        <option value="educational">Educational</option>
+        <option value="announcement">Announcement</option>
+        <option value="hot-take">Hot Take</option>
+        <option value="engagement">Engagement</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>Generate Image</label>
+      <div class="toggle-group" id="imageToggle">
+        <button class="toggle-btn" data-value="false">No</button>
+        <button class="toggle-btn active" data-value="true">Yes</button>
+      </div>
+    </div>
+
+    <button class="btn-generate" id="generateBtn" onclick="handleGenerate()">
+      <span class="spinner"></span>
+      <span class="btn-text">Generate Post</span>
+      <span class="btn-loading-text">Generating...</span>
+    </button>
+
+    <div class="error-area" id="errorArea"></div>
+  </div>
+
+  <div class="result-area" id="resultArea">
+    <div class="result-card">
+      <h3>Your Post</h3>
+      <div class="post-preview" id="postPreview"></div>
+      <div class="image-preview" id="imagePreview" style="display:none;">
+        <img id="resultImage" alt="Generated post image">
+      </div>
+    </div>
+    <div class="result-actions">
+      <button class="btn-primary" id="copyBtn" onclick="handleCopy()">Copy Post</button>
+      <button class="btn-outline" onclick="handleNew()">New Post</button>
+    </div>
+  </div>
+
+  <div class="footer-link">
+    <button onclick="toggleSettings()">Configure API Key</button>
+  </div>
+
+  <div class="settings-panel" id="settingsPanel">
+    <h3>API Configuration</h3>
+    <div class="settings-row">
+      <input type="text" id="apiKeyInput" placeholder="Enter your Gemini API key">
+      <button class="btn-save" id="saveKeyBtn" onclick="saveApiKey()">Save</button>
+    </div>
+    <div class="status-msg" id="settingsStatus">API key saved successfully!</div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const topicInput = document.getElementById('topicInput');
+    topicInput.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        handleGenerate();
+      }
+    });
+
+    const toggleBtns = document.querySelectorAll('.toggle-btn');
+    toggleBtns.forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        toggleBtns.forEach(function(b) { b.classList.remove('active'); });
+        btn.classList.add('active');
+      });
+    });
+
+    google.script.run
+      .withSuccessHandler(function(hasKey) {
+        if (!hasKey) {
+          document.getElementById('settingsPanel').classList.add('visible');
+        }
+      })
+      .hasApiKey();
+  });
+
+  function getWithImage() {
+    const active = document.querySelector('.toggle-btn.active[data-value="true"]');
+    return !!active;
+  }
+
+  function handleGenerate() {
+    var topic = document.getElementById('topicInput').value.trim();
+    if (!topic) {
+      showError('Please enter a topic for your post.');
+      return;
+    }
+
+    hideError();
+    var btn = document.getElementById('generateBtn');
+    btn.classList.add('loading');
+    btn.disabled = true;
+
+    var type = document.getElementById('typeSelect').value;
+    var withImage = getWithImage();
+
+    document.getElementById('resultArea').classList.remove('visible');
+
+    google.script.run
+      .withSuccessHandler(function(result) {
+        btn.classList.remove('loading');
+        btn.disabled = false;
+
+        if (result.error) {
+          showError(result.error);
+        } else {
+          showResult(result.postText, result.imageUrl);
+        }
+      })
+      .withFailureHandler(function(err) {
+        btn.classList.remove('loading');
+        btn.disabled = false;
+        showError('Request failed: ' + err.message);
+      })
+      .generatePost(topic, type, withImage);
+  }
+
+  function showResult(postText, imageUrl) {
+    document.getElementById('postPreview').textContent = postText;
+
+    var imagePreview = document.getElementById('imagePreview');
+    var resultImage = document.getElementById('resultImage');
+
+    if (imageUrl) {
+      resultImage.src = imageUrl;
+      imagePreview.style.display = 'block';
+    } else {
+      imagePreview.style.display = 'none';
+      resultImage.src = '';
+    }
+
+    document.getElementById('resultArea').classList.add('visible');
+
+    document.getElementById('copyBtn').classList.remove('copied');
+    document.getElementById('copyBtn').textContent = 'Copy Post';
+  }
+
+  function handleCopy() {
+    var postText = document.getElementById('postPreview').textContent;
+    navigator.clipboard.writeText(postText).then(function() {
+      var btn = document.getElementById('copyBtn');
+      btn.classList.add('copied');
+      btn.textContent = 'Copied!';
+      setTimeout(function() {
+        btn.classList.remove('copied');
+        btn.textContent = 'Copy Post';
+      }, 2000);
+    }).catch(function() {
+      var textarea = document.createElement('textarea');
+      textarea.value = postText;
+      textarea.style.position = 'fixed';
+      textarea.style.opacity = '0';
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textarea);
+      var btn = document.getElementById('copyBtn');
+      btn.classList.add('copied');
+      btn.textContent = 'Copied!';
+      setTimeout(function() {
+        btn.classList.remove('copied');
+        btn.textContent = 'Copy Post';
+      }, 2000);
+    });
+  }
+
+  function handleNew() {
+    document.getElementById('topicInput').value = '';
+    document.getElementById('topicInput').focus();
+    document.getElementById('resultArea').classList.remove('visible');
+    document.getElementById('postPreview').textContent = '';
+    document.getElementById('imagePreview').style.display = 'none';
+    document.getElementById('resultImage').src = '';
+    hideError();
+  }
+
+  function showError(msg) {
+    var el = document.getElementById('errorArea');
+    el.textContent = msg;
+    el.classList.add('visible');
+  }
+
+  function hideError() {
+    document.getElementById('errorArea').classList.remove('visible');
+    document.getElementById('errorArea').textContent = '';
+  }
+
+  function toggleSettings() {
+    document.getElementById('settingsPanel').classList.toggle('visible');
+  }
+
+  function saveApiKey() {
+    var key = document.getElementById('apiKeyInput').value.trim();
+    if (!key) {
+      return;
+    }
+
+    var btn = document.getElementById('saveKeyBtn');
+    btn.disabled = true;
+    btn.textContent = 'Saving...';
+
+    google.script.run
+      .withSuccessHandler(function() {
+        btn.disabled = false;
+        btn.textContent = 'Save';
+        var status = document.getElementById('settingsStatus');
+        status.classList.add('visible');
+        setTimeout(function() {
+          status.classList.remove('visible');
+        }, 3000);
+      })
+      .withFailureHandler(function() {
+        btn.disabled = false;
+        btn.textContent = 'Save';
+      })
+      .saveApiKey(key);
+  }
+</script>
+
+</body>
+</html>
