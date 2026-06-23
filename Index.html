@@ -485,9 +485,9 @@
 
     <div class="form-group">
       <label>Generate Image</label>
-      <div class="toggle-group" id="imageToggle">
-        <button class="toggle-btn" data-value="false">No</button>
-        <button class="toggle-btn active" data-value="true">Yes</button>
+      <div class="toggle-group" id="imageToggle" role="radiogroup" aria-label="Generate Image">
+        <button class="toggle-btn" data-value="false" role="radio" aria-checked="false">No</button>
+        <button class="toggle-btn active" data-value="true" role="radio" aria-checked="true">Yes</button>
       </div>
     </div>
 
@@ -541,8 +541,12 @@
     const toggleBtns = document.querySelectorAll('.toggle-btn');
     toggleBtns.forEach(function(btn) {
       btn.addEventListener('click', function() {
-        toggleBtns.forEach(function(b) { b.classList.remove('active'); });
+        toggleBtns.forEach(function(b) {
+          b.classList.remove('active');
+          b.setAttribute('aria-checked', 'false');
+        });
         btn.classList.add('active');
+        btn.setAttribute('aria-checked', 'true');
       });
     });
 
@@ -673,9 +677,11 @@
   function saveApiKey() {
     var key = document.getElementById('apiKeyInput').value.trim();
     if (!key) {
+      showError('Please enter an API key before saving.');
       return;
     }
 
+    hideError();
     var btn = document.getElementById('saveKeyBtn');
     btn.disabled = true;
     btn.textContent = 'Saving...';
@@ -690,9 +696,10 @@
           status.classList.remove('visible');
         }, 3000);
       })
-      .withFailureHandler(function() {
+      .withFailureHandler(function(err) {
         btn.disabled = false;
         btn.textContent = 'Save';
+        showError('Failed to save API key: ' + err.message);
       })
       .saveApiKey(key);
   }
